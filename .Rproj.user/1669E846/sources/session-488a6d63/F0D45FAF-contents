@@ -1,0 +1,163 @@
+---
+title: "Dec 16"
+author: "Muxin Li"
+date: "2025-12-16"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+isaac=read_csv("tab/csv/isaac1_6_7_centre_info.csv")|>
+  janitor::clean_names()
+glimpse(isaac)
+```
+
+## Q1-Q17 about sampling and study design (find the frequently occurring responses)
+```{r}
+study_design_Q1_Q17=
+  isaac|>
+  select("isaac_id":"q17")
+
+q_lookup_1_17 <- tribble(
+  ~question, ~question_text,
+  "q1",  "Which sampling frame category is most appropriate for the study?",
+  "q2",  "Description of the sampling frame.",
+  "q3",  "Is a map of the centre available at the ISAAC International Data Centre?",
+  "q4",  "Were any schools excluded from the sampling frame before selection?",
+  "q5",  "Description of the reason for exclusion of these schools.",
+  "q6",  "How many schools were rejected after selection?",
+  "q7",  "Description of the reason for rejection of these schools.",
+  "q8",  "Were all schools in the sampling frame used?",
+  "q9",  "Were the schools selected using a random selection method?",
+  "q10", "Was there stratification, followed by random selection of schools?",
+  "q11", "Description of sampling method for schools if a random selection method was not used in Q10.",
+  "q12", "Which approach was used for selection of children within the schools?",
+  "q13", "Description of the approach to child selection within the schools.",
+  "q14", "Which children were selected from the grade/level/year or age group?",
+  "q15", "Description of which children were selected if \"Some children\" was selected in Q14.",
+  "q16", "How many years of age or grade(s)/level(s)/year(s) were selected?",
+  "q17", "Description of how many years of age or grade(s)/level(s)/year(s) were selected if \"Other\" in Q16."
+)
+
+most_common_q1_q17=
+  study_design_Q1_Q17|>
+  select("q1":"q17") |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "question",
+    values_to = "response",
+    values_transform = list(response = as.character)
+  )|>
+  filter(!is.na(response), response != "")|>  
+  count(question, response, name = "n") |>
+  group_by(question) |>
+  mutate(qnum = as.integer(stringr::str_remove(question, "^q"))) |>
+  arrange(qnum, desc(n), question, response)|>
+  mutate(question = paste0("q", qnum)) |>
+  select(-qnum)|>
+  filter(n>10)|>
+  mutate(prop=n/116)|>
+  left_join(q_lookup_1_17, by = "question")
+
+most_common_q1_q17
+```
+
+## Q18-Q25 about data entry (find the frequently occurring responses)
+```{r}
+q_lookup_18_25 = tribble(
+  ~question, ~question_text,
+  "q18", "Was the data double entered?",
+  "q19", "Description of data entry method if \"No\" to Q18.",
+  "q20", "Were changes made to the demographic data after the questionnaire was completed?",
+  "q21", "Description of changes to the demographic data if \"Yes\" to Q20.",
+  "q22", "Were changes made to the symptoms questionnaire data?",
+  "q23", "Description of changes to the symptoms questionnaire data if \"Yes\" to Q22.",
+  "q24", "Can the symptoms questionnaire data be returned to its original form if \"Yes\" to Q22?",
+  "q25", "What proportion of observations have been changed if \"Yes\" to Q22?"
+)
+
+most_common_q18_q25 =
+  isaac |>
+  select("q18":"q25") |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "question",
+    values_to = "response",
+    values_transform = list(response = as.character)
+  ) |>
+  filter(!is.na(response), response != "") |>
+  count(question, response, name = "n") |>
+  group_by(question) |>
+  mutate(qnum = as.integer(stringr::str_remove(question, "^q"))) |>
+  arrange(qnum, desc(n), response) |>
+  mutate(question = paste0("q", qnum)) |>
+  select(-qnum) |>
+  filter(n > 10) |>
+  mutate(prop = n / 116) |>
+  left_join(q_lookup_18_25, by = "question")
+
+most_common_q18_q25
+```
+
+## Q27-Q36 about sample size and participation situation (analysis participation in child and school in different countries)
+```{r}
+q27_q36=
+  isaac |>
+  mutate(
+    child_participation = q35 / (q35 + q36),
+    school_participation = q33 / q27
+  )|>
+  drop_na(child_participation,school_participation)
+
+country_q27_q36=
+  q27_q36|>
+  select(country_name,child_participation,school_participation)|>
+  group_by(country_name)|>
+  summarise(mean_child_participation=mean(child_participation),
+            mean_school_participation=mean(school_participation))
+
+country_q27_q36
+```
+
+## q37-q46 about questionnaire translation and cultural adaptation (find the frequently occurring responses)
+```{r}
+q_lookup_37_46 = tribble(
+  ~question, ~question_text,
+  "q37", "Was the English language questionnaire translated to one or more languages?",
+  "q38", "How many translations were developed and used in this centre?",
+  "q39", "Which languages were used in this centre?",
+  "q40", "Were the translators familiar with asthma and allergy terminology?",
+  "q41", "Were the local community approached to help with difficult words and concepts?",
+  "q42", "Were other centres in the country or region involved in preparation of the translation(s)?",
+  "q43", "Which other centres were involved if \"Yes\" to Q42?",
+  "q44", "Were the translated questionnaires translated back to English by an independent translator?",
+  "q45", "Were the translated questionnaires pilot tested?",
+  "q46", "Was the International or European version of the video questionnaire used?"
+)
+
+most_common_q37_q46 =
+  isaac |>
+  select("q37":"q46") |>
+  pivot_longer(
+    cols = everything(),
+    names_to = "question",
+    values_to = "response",
+    values_transform = list(response = as.character)
+  ) |>
+  filter(!is.na(response), response != "") |>
+  count(question, response, name = "n") |>
+  group_by(question) |>
+  mutate(qnum = as.integer(stringr::str_remove(question, "^q"))) |>
+  arrange(qnum, desc(n), question, response) |>
+  mutate(question = paste0("q", qnum)) |>
+  select(-qnum) |>
+  filter(n > 10) |>
+  mutate(prop = n / 116) |>
+  left_join(q_lookup_37_46, by = "question")
+
+most_common_q37_q46
+```
+
