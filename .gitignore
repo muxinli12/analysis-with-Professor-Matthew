@@ -2,3 +2,4 @@ tab/*.tab
 tab/csv/
 *.zip
 *.tar.gz
+.Rproj.user

@@ -101,7 +101,7 @@ study_design_Q1_Q17=
   isaac|>
   select("isaac_id":"q17")
 
-q_lookup_1_17 <- tribble(
+q_lookup_1_17 = tribble(
   ~question, ~question_text,
   "q1",  "Which sampling frame category is most appropriate for the study?",
   "q2",  "Description of the sampling frame.",
