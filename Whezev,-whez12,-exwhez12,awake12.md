@@ -319,7 +319,3 @@ exp(cbind(OR = coef(model_all), confint(model_all)))
     ## whezev_bin   2.994620028 2.671451568  3.357260516
     ## whez12_bin  10.054514689 9.173250513 11.040221099
     ## awake12      2.182412499 2.116066104  2.251044178
-
-Exercise-induced wheeze is not an isolated phenomenon; it is closely
-linked to current wheeze and symptom severity, and to a lesser extent to
-wheeze history

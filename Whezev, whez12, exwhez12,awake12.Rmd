@@ -130,4 +130,4 @@ model_all=
 summary(model_all)
 exp(cbind(OR = coef(model_all), confint(model_all)))
 ```
-Exercise-induced wheeze is not an isolated phenomenon; it is closely linked to current wheeze and symptom severity, and to a lesser extent to wheeze history
+
