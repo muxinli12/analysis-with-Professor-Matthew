@@ -73,7 +73,7 @@ prop.table(table(analysis1_6_7$awake12))
     ##          1          2          3 
     ## 0.74878712 0.18367394 0.06753893
 
-### relationship between the past and the present(whezev and whez12)
+### between the past and the present(whezev and whez12)
 
 ``` r
 table(analysis1_6_7$whezev, analysis1_6_7$whez12)
@@ -93,8 +93,8 @@ prop.table(table(analysis1_6_7$whezev, analysis1_6_7$whez12))
     ##   1 0.276759431 0.267458506
     ##   2 0.003185952 0.452596111
 
-27.68% people have a history of wheezing or whistling and have relapsed
-within 12 months
+27.68% overall proportion of people have a history of wheezing or
+whistling and have relapsed within 12 months
 
 ### severity in past 12 month (whez12 and awake12)
 
@@ -142,7 +142,7 @@ prop.table(table(severe$whezev, severe$whez12))
 93% of the severe cases have a history of wheezing or whistling and have
 relapsed within 12 months
 
-### if exerciese-induced (whez12 and exwhez12)
+### current wheeze and exerciese-induced (whez12 and exwhez12)
 
 ``` r
 table(analysis1_6_7$whez12, analysis1_6_7$exwhez12)
@@ -161,8 +161,6 @@ prop.table(table(analysis1_6_7$whez12, analysis1_6_7$exwhez12))
     ##              1          2
     ##   1 0.11962256 0.15760605
     ##   2 0.01771964 0.70505174
-
-12.96% is exercise-induced wheeze
 
 ## Part 2 relationship exploration
 
@@ -248,6 +246,16 @@ summary(model)
     ## 
     ## Number of Fisher Scoring iterations: 4
 
+``` r
+exp(cbind(OR = coef(model), confint(model)))
+```
+
+    ## Waiting for profiling to be done...
+
+    ##                    OR     2.5 %    97.5 %
+    ## (Intercept) 0.2146204 0.2025166 0.2274009
+    ## awake12     2.1051192 2.0405560 2.1719556
+
 use logistic regression get same conclusion
 
 ### exercise-induced as a outcome,find the relationship with past wheeze, now wheeze and symptom severity
@@ -299,3 +307,19 @@ summary(model_all)
     ## AIC: 55283
     ## 
     ## Number of Fisher Scoring iterations: 6
+
+``` r
+exp(cbind(OR = coef(model_all), confint(model_all)))
+```
+
+    ## Waiting for profiling to be done...
+
+    ##                       OR       2.5 %       97.5 %
+    ## (Intercept)  0.006774346 0.006202842  0.007385433
+    ## whezev_bin   2.994620028 2.671451568  3.357260516
+    ## whez12_bin  10.054514689 9.173250513 11.040221099
+    ## awake12      2.182412499 2.116066104  2.251044178
+
+Exercise-induced wheeze is not an isolated phenomenon; it is closely
+linked to current wheeze and symptom severity, and to a lesser extent to
+wheeze history

@@ -34,12 +34,12 @@ prop.table(table(analysis1_6_7$exwhez12))
 prop.table(table(analysis1_6_7$awake12))
 ```
 
-### relationship between the past and the present(whezev and whez12)
+### between the past and the present(whezev and whez12)
 ```{r}
 table(analysis1_6_7$whezev, analysis1_6_7$whez12)
 prop.table(table(analysis1_6_7$whezev, analysis1_6_7$whez12))
 ```
-27.68% people have a history of wheezing or whistling and have relapsed within 12 months
+27.68% overall proportion of people have a history of wheezing or whistling and have relapsed within 12 months
 
 ### severity in past 12 month (whez12 and awake12)
 ```{r}
@@ -61,12 +61,11 @@ prop.table(table(severe$whezev, severe$whez12))
 ```
  93% of the severe cases have a history of wheezing or whistling and have relapsed within 12 months
  
-### if exerciese-induced (whez12 and exwhez12)
+### current wheeze and exerciese-induced (whez12 and exwhez12)
 ```{r}
 table(analysis1_6_7$whez12, analysis1_6_7$exwhez12)
 prop.table(table(analysis1_6_7$whez12, analysis1_6_7$exwhez12))
 ```
-12.96% is exercise-induced wheeze
 
 
 ## Part 2 relationship exploration
@@ -101,6 +100,7 @@ model= glm(
 )
 
 summary(model)
+exp(cbind(OR = coef(model), confint(model)))
 ```
 use logistic regression get same conclusion
 
@@ -128,5 +128,6 @@ model_all=
 )
 
 summary(model_all)
+exp(cbind(OR = coef(model_all), confint(model_all)))
 ```
-
+Exercise-induced wheeze is not an isolated phenomenon; it is closely linked to current wheeze and symptom severity, and to a lesser extent to wheeze history
