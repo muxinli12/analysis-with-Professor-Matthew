@@ -19,24 +19,28 @@ analysis1_6_7=
                 ~ na_if(., 9)))
 ```
 
-## Part 1 analysis between these 4 variables 
+## Part 1 basic analysis 
 these 4 variables seem in a logic chain, whezev(past)--whez12(now)--awake12(severity)--exwhez12(if exercise causes)
+
 ### for whezev, whez12 and exwhez12 1=Yes, 2=No
 ```{r}
 prop.table(table(analysis1_6_7$whezev))
 prop.table(table(analysis1_6_7$whez12))
 prop.table(table(analysis1_6_7$exwhez12))
 ```
+
 ### for awake12 1=no symptoms, 2=mild symptoms, 3=severe symptoms
 ```{r}
 prop.table(table(analysis1_6_7$awake12))
 ```
+
 ### relationship between the past and the present(whezev and whez12)
 ```{r}
 table(analysis1_6_7$whezev, analysis1_6_7$whez12)
 prop.table(table(analysis1_6_7$whezev, analysis1_6_7$whez12))
 ```
 27.68% people have a history of wheezing or whistling and have relapsed within 12 months
+
 ### severity in past 12 month (whez12 and awake12)
 ```{r}
 analysis1_6_7|>
@@ -45,6 +49,7 @@ analysis1_6_7|>
   mutate(prop = n / sum(n))
 ```
 about 14% have severe symptoms
+
 ### under severe sympton (awake12) analyse past and now (whezev and whez12)
 ```{r}
 severe=
@@ -55,21 +60,73 @@ table(severe$whezev, severe$whez12)
 prop.table(table(severe$whezev, severe$whez12))
 ```
  93% of the severe cases have a history of wheezing or whistling and have relapsed within 12 months
+ 
 ### if exerciese-induced (whez12 and exwhez12)
 ```{r}
 table(analysis1_6_7$whez12, analysis1_6_7$exwhez12)
 prop.table(table(analysis1_6_7$whez12, analysis1_6_7$exwhez12))
 ```
 12.96% is exercise-induced wheeze
-### if exercise-induced has relationship with wheeze history
+
+
+## Part 2 relationship exploration
+### if exercise-induced has relationship with symptom severity
+chi square
 ```{r}
-exercise=
-  analysis1_6_7|>
-  filter(exwhez12==1)
+analysis1_6_7 |>
+  filter(whez12 == 1) |>
+  group_by(awake12) |>
+  summarise(
+    prop = mean(exwhez12 == 1, na.rm = TRUE),
+    n = n()
+  )
 
-table(exercise$whezev, exercise$whez12)
-prop.table(table(exercise$whezev, exercise$whez12))
+table= 
+  xtabs(
+  ~ awake12 + exwhez12,
+  data = analysis1_6_7 |> filter(whez12 == 1)
+)
+
+table
+
+chisq.test(table)
 ```
-86.62% exercise-induced have a history of wheezing or whistling and have relapsed within 12 months
+There was a statistically significant association between wheeze severity and exercise-induced wheeze.
 
+```{r}
+model= glm(
+  exwhez12 == 1 ~ awake12,
+  data = analysis1_6_7 |> filter(whez12 == 1),
+  family = binomial
+)
+
+summary(model)
+```
+use logistic regression get same conclusion
+
+### exercise-induced as a outcome,find the relationship with past wheeze, now wheeze and symptom severity
+```{r}
+df_new=
+  analysis1_6_7 |>
+  mutate(
+    whezev_bin = case_when(
+      whezev == 1 ~ 1,
+      whezev == 2 ~ 0,
+      TRUE ~ NA_real_
+    ),
+    whez12_bin = case_when(
+      whez12 == 1 ~ 1,
+      whez12 == 2 ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+model_all=
+  glm(
+  exwhez12==1 ~ whezev_bin + whez12_bin + awake12,
+  data =df_new,
+  family = binomial
+)
+
+summary(model_all)
+```
 

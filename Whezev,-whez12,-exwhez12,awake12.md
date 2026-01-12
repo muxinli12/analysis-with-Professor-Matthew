@@ -32,11 +32,12 @@ analysis1_6_7=
                 ~ na_if(., 9)))
 ```
 
-## Part 1 analysis between these 4 variables
+## Part 1 basic analysis
 
 these 4 variables seem in a logic chain,
 whezev(past)–whez12(now)–awake12(severity)–exwhez12(if exercise causes)
-\### for whezev, whez12 and exwhez12 1=Yes, 2=No
+
+### for whezev, whez12 and exwhez12 1=Yes, 2=No
 
 ``` r
 prop.table(table(analysis1_6_7$whezev))
@@ -93,7 +94,9 @@ prop.table(table(analysis1_6_7$whezev, analysis1_6_7$whez12))
     ##   2 0.003185952 0.452596111
 
 27.68% people have a history of wheezing or whistling and have relapsed
-within 12 months \### severity in past 12 month (whez12 and awake12)
+within 12 months
+
+### severity in past 12 month (whez12 and awake12)
 
 ``` r
 analysis1_6_7|>
@@ -110,8 +113,9 @@ analysis1_6_7|>
     ## 3  3 [One or more nights per week]   5389 0.140 
     ## 4 NA                                 1827 0.0476
 
-about 14% have severe symptoms \### under severe sympton (awake12)
-analyse past and now (whezev and whez12)
+about 14% have severe symptoms
+
+### under severe sympton (awake12) analyse past and now (whezev and whez12)
 
 ``` r
 severe=
@@ -136,8 +140,9 @@ prop.table(table(severe$whezev, severe$whez12))
     ##   2 0.005949256 0.041819773
 
 93% of the severe cases have a history of wheezing or whistling and have
-relapsed within 12 months \### if exerciese-induced (whez12 and
-exwhez12)
+relapsed within 12 months
+
+### if exerciese-induced (whez12 and exwhez12)
 
 ``` r
 table(analysis1_6_7$whez12, analysis1_6_7$exwhez12)
@@ -157,30 +162,140 @@ prop.table(table(analysis1_6_7$whez12, analysis1_6_7$exwhez12))
     ##   1 0.11962256 0.15760605
     ##   2 0.01771964 0.70505174
 
-12.96% is exercise-induced wheeze \### if exercise-induced has
-relationship with wheeze history
+12.96% is exercise-induced wheeze
+
+## Part 2 relationship exploration
+
+### if exercise-induced has relationship with symptom severity
+
+chi square
 
 ``` r
-exercise=
-  analysis1_6_7|>
-  filter(exwhez12==1)
-
-table(exercise$whezev, exercise$whez12)
+analysis1_6_7 |>
+  filter(whez12 == 1) |>
+  group_by(awake12) |>
+  summarise(
+    prop = mean(exwhez12 == 1, na.rm = TRUE),
+    n = n()
+  )
 ```
 
-    ##    
-    ##         1     2
-    ##   1 15825  1470
-    ##   2   102   872
+    ## # A tibble: 4 × 3
+    ##   awake12                            prop     n
+    ##   <dbl+lbl>                         <dbl> <int>
+    ## 1  1 [Never woken with wheezing]    0.301 16307
+    ## 2  2 [Less than one night per week] 0.510 14840
+    ## 3  3 [One or more nights per week]  0.636  5389
+    ## 4 NA                                0.362  1827
 
 ``` r
-prop.table(table(exercise$whezev, exercise$whez12))
+table= 
+  xtabs(
+  ~ awake12 + exwhez12,
+  data = analysis1_6_7 |> filter(whez12 == 1)
+)
+
+table
 ```
 
-    ##    
-    ##               1           2
-    ##   1 0.866221468 0.080464174
-    ##   2 0.005583228 0.047731129
+    ##        exwhez12
+    ## awake12     1     2
+    ##       1  4807 11161
+    ##       2  7326  7037
+    ##       3  3301  1892
 
-86.62% exercise-induced have a history of wheezing or whistling and have
-relapsed within 12 months
+``` r
+chisq.test(table)
+```
+
+    ## 
+    ##  Pearson's Chi-squared test
+    ## 
+    ## data:  table
+    ## X-squared = 2346.6, df = 2, p-value < 2.2e-16
+
+There was a statistically significant association between wheeze
+severity and exercise-induced wheeze.
+
+``` r
+model= glm(
+  exwhez12 == 1 ~ awake12,
+  data = analysis1_6_7 |> filter(whez12 == 1),
+  family = binomial
+)
+
+summary(model)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = exwhez12 == 1 ~ awake12, family = binomial, data = filter(analysis1_6_7, 
+    ##     whez12 == 1))
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept) -1.53888    0.02956  -52.05   <2e-16 ***
+    ## awake12      0.74437    0.01592   46.76   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 48635  on 35523  degrees of freedom
+    ## Residual deviance: 46314  on 35522  degrees of freedom
+    ##   (2839 observations deleted due to missingness)
+    ## AIC: 46318
+    ## 
+    ## Number of Fisher Scoring iterations: 4
+
+use logistic regression get same conclusion
+
+### exercise-induced as a outcome,find the relationship with past wheeze, now wheeze and symptom severity
+
+``` r
+df_new=
+  analysis1_6_7 |>
+  mutate(
+    whezev_bin = case_when(
+      whezev == 1 ~ 1,
+      whezev == 2 ~ 0,
+      TRUE ~ NA_real_
+    ),
+    whez12_bin = case_when(
+      whez12 == 1 ~ 1,
+      whez12 == 2 ~ 0,
+      TRUE ~ NA_real_
+    )
+  )
+model_all=
+  glm(
+  exwhez12==1 ~ whezev_bin + whez12_bin + awake12,
+  data =df_new,
+  family = binomial
+)
+
+summary(model_all)
+```
+
+    ## 
+    ## Call:
+    ## glm(formula = exwhez12 == 1 ~ whezev_bin + whez12_bin + awake12, 
+    ##     family = binomial, data = df_new)
+    ## 
+    ## Coefficients:
+    ##             Estimate Std. Error z value Pr(>|z|)    
+    ## (Intercept) -4.99461    0.04450 -112.24   <2e-16 ***
+    ## whezev_bin   1.09682    0.05827   18.82   <2e-16 ***
+    ## whez12_bin   2.30802    0.04725   48.84   <2e-16 ***
+    ## awake12      0.78043    0.01577   49.48   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## (Dispersion parameter for binomial family taken to be 1)
+    ## 
+    ##     Null deviance: 82275  on 82462  degrees of freedom
+    ## Residual deviance: 55275  on 82459  degrees of freedom
+    ##   (259669 observations deleted due to missingness)
+    ## AIC: 55283
+    ## 
+    ## Number of Fisher Scoring iterations: 6
