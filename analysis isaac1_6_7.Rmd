@@ -161,3 +161,8 @@ most_common_q37_q46 =
 most_common_q37_q46
 ```
 
+```{r}
+analysis1_6_7|>
+  filter(country==!38)
+```
+
