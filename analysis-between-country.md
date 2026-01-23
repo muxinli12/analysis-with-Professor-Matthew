@@ -69,6 +69,13 @@ ggplot(isaac_country_centre1, aes(x = whezev_prev, y = whez12_prev)) +
 
 ![](analysis-between-country_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
+``` r
+ggplot(isaac_country_centre1,aes(x=whezev_prev, y = whez12_prev,color=country_centre))+
+  geom_point()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+
 ### plot2 x=whezev,y=awake12 (define awake12_prev high is \> 2, high: whezev_prev \>= 0.4 & awake12_prev \>= 0.1 )
 
 ``` r
@@ -106,7 +113,7 @@ ggplot(isaac_country_centre2, aes(x = whezev_prev, y = awake12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ### plot3 x=whezev, y=exwhez12 (high:whezev_prev \>= 0.4 & exwhez12_prev \>= 0.1)
 
@@ -145,7 +152,7 @@ ggplot(isaac_country_centre3, aes(x = whezev_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ### plot4 x=whez12, y=awake12 (define awake12_prev high is \> 2, high: whez12_prev \>= 0.4 & awake12_prev \>= 0.1 )
 
@@ -184,7 +191,7 @@ ggplot(isaac_country_centre4, aes(x = whez12_prev, y = awake12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ### plot5 x=whez12, y=exwhez12 (high: whez12_prev \>=0.4 and exwhez12_prev\>=0.1)
 
@@ -223,7 +230,7 @@ ggplot(isaac_country_centre5, aes(x = whez12_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ### plot6 x=awake12 y=exwhez12 (define awake12_prev high is \> 2, high: awake12_prev \>= 0.1 & exwhez12 \>=0.1 )
 
@@ -262,4 +269,4 @@ ggplot(isaac_country_centre6, aes(x = awake12_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->

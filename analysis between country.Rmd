@@ -56,6 +56,11 @@ ggplot(isaac_country_centre1, aes(x = whezev_prev, y = whez12_prev)) +
 
 ```
 
+```{r}
+ggplot(isaac_country_centre1,aes(x=whezev_prev, y = whez12_prev,color=country_centre))+
+  geom_point()
+```
+
 ### plot2 x=whezev,y=awake12 (define awake12_prev high is > 2, high: whezev_prev >= 0.4 & awake12_prev >= 0.1 )
 ```{r}
 isaac_country_centre2=
