@@ -19,7 +19,7 @@ isaac=read_sav("spss/spss19/isaac1_6_7_core_ques_data.sav")|>
 ```
 
 
-### plot1 x= whezev y=whez12 (high: whezev_prev >= 0.4 & whez12_prev >= 0.4)
+### plot1   x= whezev y=whez12 (high: whezev_prev >= 0.4 & whez12_prev >= 0.4)
 ```{r}
 isaac_country_centre1=
   isaac|>
@@ -58,10 +58,12 @@ ggplot(isaac_country_centre1, aes(x = whezev_prev, y = whez12_prev)) +
 
 ```{r}
 ggplot(isaac_country_centre1,aes(x=whezev_prev, y = whez12_prev,color=country_centre))+
-  geom_point()
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
 ```
 
-### plot2 x=whezev,y=awake12 (define awake12_prev high is > 2, high: whezev_prev >= 0.4 & awake12_prev >= 0.1 )
+### plot2   x=whezev,y=awake12 (define awake12_prev high is > 2, high: whezev_prev >= 0.4 & awake12_prev >= 0.1 )
 ```{r}
 isaac_country_centre2=
   isaac|>
@@ -97,7 +99,14 @@ ggplot(isaac_country_centre2, aes(x = whezev_prev, y = awake12_prev)) +
   theme_minimal()
 ```
 
-### plot3 x=whezev, y=exwhez12 (high:whezev_prev >= 0.4 & exwhez12_prev >= 0.1)
+```{r}
+ggplot(isaac_country_centre2,aes(x=whezev_prev, y = awake12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+### plot3   x=whezev, y=exwhez12 (high:whezev_prev >= 0.4 & exwhez12_prev >= 0.1)
 ```{r}
 isaac_country_centre3=
   isaac|>
@@ -134,7 +143,14 @@ ggplot(isaac_country_centre3, aes(x = whezev_prev, y = exwhez12_prev)) +
 
 ```
 
-### plot4 x=whez12, y=awake12 (define awake12_prev high is > 2, high: whez12_prev >= 0.4 & awake12_prev >= 0.1 )
+```{r}
+ggplot(isaac_country_centre3,aes(x=whezev_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+### plot4   x=whez12, y=awake12 (define awake12_prev high is > 2, high: whez12_prev >= 0.4 & awake12_prev >= 0.1 )
 ```{r}
 isaac_country_centre4=
   isaac|>
@@ -170,7 +186,14 @@ ggplot(isaac_country_centre4, aes(x = whez12_prev, y = awake12_prev)) +
   theme_minimal()
 ```
 
-### plot5 x=whez12, y=exwhez12 (high: whez12_prev >=0.4 and exwhez12_prev>=0.1)
+```{r}
+ggplot(isaac_country_centre4,aes(x=whez12_prev, y = awake12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+### plot5   x=whez12, y=exwhez12 (high: whez12_prev >=0.4 and exwhez12_prev>=0.1)
 ```{r}
 isaac_country_centre5=
   isaac|>
@@ -206,7 +229,14 @@ ggplot(isaac_country_centre5, aes(x = whez12_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-### plot6 x=awake12 y=exwhez12 (define awake12_prev high is > 2, high: awake12_prev >= 0.1 & exwhez12 >=0.1 )
+```{r}
+ggplot(isaac_country_centre5,aes(x=whez12_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+### plot6  x=awake12, y=exwhez12 (define awake12_prev high is > 2, high: awake12_prev >= 0.1 & exwhez12 >=0.1 )
 ```{r}
 isaac_country_centre6=
   isaac|>
@@ -240,5 +270,31 @@ ggplot(isaac_country_centre6, aes(x = awake12_prev, y = exwhez12_prev)) +
     color = ""
   ) +
   theme_minimal()
+```
+
+```{r}
+ggplot(isaac_country_centre6,aes(x=awake12_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+### country centre with whezev_prev>=0.4,whez12_prev>=0.4,exwhez12_prev>=0.1,awake12_prev>=0.1
+```{r}
+isaac_high_country=
+  isaac|>
+  filter(whezev!=9,whez12!=9,exwhez12!=9,awake12!=9)|>
+  group_by(country_centre) |>
+  summarize(
+    whezev_prev = mean(whezev==1, na.rm = TRUE),
+    whez12_prev = mean(whez12==1, na.rm = TRUE),
+    exwhez12_prev = mean(exwhez12 == 1, na.rm = TRUE),
+    awake12_prev = mean(awake12 > 2  , na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )|>
+  filter(whezev_prev>=0.4,whez12_prev>=0.4,exwhez12_prev>=0.1,awake12_prev>=0.1)
+
+isaac_high_country
 ```
 

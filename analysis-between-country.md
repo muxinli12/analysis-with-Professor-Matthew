@@ -71,7 +71,9 @@ ggplot(isaac_country_centre1, aes(x = whezev_prev, y = whez12_prev)) +
 
 ``` r
 ggplot(isaac_country_centre1,aes(x=whezev_prev, y = whez12_prev,color=country_centre))+
-  geom_point()
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
 ```
 
 ![](analysis-between-country_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -115,6 +117,15 @@ ggplot(isaac_country_centre2, aes(x = whezev_prev, y = awake12_prev)) +
 
 ![](analysis-between-country_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
+``` r
+ggplot(isaac_country_centre2,aes(x=whezev_prev, y = awake12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
 ### plot3 x=whezev, y=exwhez12 (high:whezev_prev \>= 0.4 & exwhez12_prev \>= 0.1)
 
 ``` r
@@ -152,7 +163,16 @@ ggplot(isaac_country_centre3, aes(x = whezev_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+
+``` r
+ggplot(isaac_country_centre3,aes(x=whezev_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ### plot4 x=whez12, y=awake12 (define awake12_prev high is \> 2, high: whez12_prev \>= 0.4 & awake12_prev \>= 0.1 )
 
@@ -191,7 +211,16 @@ ggplot(isaac_country_centre4, aes(x = whez12_prev, y = awake12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+``` r
+ggplot(isaac_country_centre4,aes(x=whez12_prev, y = awake12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ### plot5 x=whez12, y=exwhez12 (high: whez12_prev \>=0.4 and exwhez12_prev\>=0.1)
 
@@ -230,9 +259,18 @@ ggplot(isaac_country_centre5, aes(x = whez12_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
-### plot6 x=awake12 y=exwhez12 (define awake12_prev high is \> 2, high: awake12_prev \>= 0.1 & exwhez12 \>=0.1 )
+``` r
+ggplot(isaac_country_centre5,aes(x=whez12_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+### plot6 x=awake12, y=exwhez12 (define awake12_prev high is \> 2, high: awake12_prev \>= 0.1 & exwhez12 \>=0.1 )
 
 ``` r
 isaac_country_centre6=
@@ -269,4 +307,48 @@ ggplot(isaac_country_centre6, aes(x = awake12_prev, y = exwhez12_prev)) +
   theme_minimal()
 ```
 
-![](analysis-between-country_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+``` r
+ggplot(isaac_country_centre6,aes(x=awake12_prev, y = exwhez12_prev,color=country_centre))+
+  geom_point()+
+  scale_color_viridis_c(option = "viridis") +
+  theme_minimal()
+```
+
+![](analysis-between-country_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+### country centre with whezev_prev\>=0.4,whez12_prev\>=0.4,exwhez12_prev\>=0.1,awake12_prev\>=0.1
+
+``` r
+isaac_high_country=
+  isaac|>
+  filter(whezev!=9,whez12!=9,exwhez12!=9,awake12!=9)|>
+  group_by(country_centre) |>
+  summarize(
+    whezev_prev = mean(whezev==1, na.rm = TRUE),
+    whez12_prev = mean(whez12==1, na.rm = TRUE),
+    exwhez12_prev = mean(exwhez12 == 1, na.rm = TRUE),
+    awake12_prev = mean(awake12 > 2  , na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  )|>
+  filter(whezev_prev>=0.4,whez12_prev>=0.4,exwhez12_prev>=0.1,awake12_prev>=0.1)
+
+isaac_high_country
+```
+
+    ## # A tibble: 41 × 6
+    ##    country_centre whezev_prev whez12_prev exwhez12_prev awake12_prev     n
+    ##             <dbl>       <dbl>       <dbl>         <dbl>        <dbl> <int>
+    ##  1           1.02       0.998       0.975         0.612        0.129   959
+    ##  2           3.03       0.801       0.693         0.471        0.216   473
+    ##  3           4.02       0.952       0.942         0.464        0.118   703
+    ##  4           7.02       0.707       0.548         0.300        0.119   604
+    ##  5           7.06       1           0.995         0.471        0.168   191
+    ##  6           8.03       1           0.987         0.496        0.127   228
+    ##  7           8.1        1           1             0.460        0.205   161
+    ##  8          10.0        0.975       0.938         0.15         0.125    80
+    ##  9          10.1        1           1             0.239        0.130    46
+    ## 10          11.0        0.681       0.543         0.265        0.127   457
+    ## # ℹ 31 more rows
