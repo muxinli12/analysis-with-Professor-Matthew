@@ -2,7 +2,12 @@
 title: "country map"
 author: "Muxin Li"
 date: "2026-02-01"
-output: html_document
+output: 
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float: true
+    df_print: paged
 ---
 
 ```{r}
@@ -72,6 +77,7 @@ isaac_country_centre=
     n=n()
   )
  
+isaac_country_centre
 ```
 
 ```{r}
@@ -108,8 +114,9 @@ fix_isaac_country_centre=
       TRUE ~ centre
     )
   )
-# find some country or centre name has some unreadable symbol so we fix them
+# some country or centre name has some unreadable symbol so we fix them
 
+fix_isaac_country_centre
 ```
 
 ```{r}
@@ -122,7 +129,8 @@ centres_geo=
     lat = lat,
     long = lon
   )
-
+# find lat and lon which is helpful when create the map
+centres_geo
 ```
 
 ```{r}
@@ -131,6 +139,8 @@ problem=
   filter(is.na(lat) | is.na(lon))|>
   select(country,centre, lat,lon)
 # find the country/ centre without lat and lon
+
+problem
 ```
 
 ```{r}
@@ -154,7 +164,9 @@ centres_geo=
       TRUE ~ lon
     )
   )
-# add the lat and lon by myself
+# add the missing lat and lon by myself
+
+centres_geo
 ```
 
 ```{r}
@@ -217,4 +229,8 @@ country_map
 
 ```
 
+
+```{r}
+rmarkdown::render("country_map.Rmd", output_format = "html_document", output_dir = "docs")
+```
 
