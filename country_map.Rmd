@@ -1,0 +1,220 @@
+---
+title: "country map"
+author: "Muxin Li"
+date: "2026-02-01"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(haven)
+library(dplyr)
+library(tidygeocoder)
+library(stringr)
+library(leaflet)
+library(scales)
+library(htmltools)
+```
+
+```{r}
+isaac=read_sav("spss/spss19/isaac1_6_7_core_ques_data.sav")|>
+  janitor::clean_names()|>
+  mutate(country_code=as.character(country),centre_code=as.character(centre), whezev=as.numeric(whezev),whez12=as.numeric(whez12),awake12=as.numeric(awake12),exwhez12=as.numeric(exwhez12))|>
+  select(country_code,centre_code,whezev, whez12, awake12, exwhez12)
+
+country=read_csv("spss/csv/isaac1_6_7_centre_info.csv")|>
+  janitor::clean_names()|>
+  mutate(country=as.character(country_name),centre=as.character(centre_name),country_code=as.character(country_code),centre_code=as.character(centre_code))|>
+  select(country,country_code,centre,centre_code)|>
+  mutate(
+  centre= str_replace(
+    centre,
+    "\\s*\\d+\\s*[–-]\\s*\\d+\\s*$",
+    ""
+  ),
+  centre = str_replace(
+    centre,
+    "\\s*\\(\\d+\\)\\s*$",
+    ""
+  ),
+  centre = str_squish(centre),
+  centre = iconv(centre, from = "", to = "UTF-8"),
+  country= iconv(country, from = "", to = "UTF-8")
+)|>
+  mutate(country = if_else(
+      country_code == 85,
+      "Panama",
+      country))
+#remove some centre suffix like Sydney 6-7 or Madras (2) Madras (3) Madras (4) and let countrycode 85 be Panam
+
+
+isaac|>
+  distinct(country_code,centre_code)
+country|>
+  distinct(country_code,centre_code)
+#make sure have some number of country and centre
+
+isaac_country_centre=
+  left_join(isaac,country,by=c("country_code","centre_code"))|>
+  mutate(
+    across(
+      c(whezev, whez12, awake12, exwhez12),
+      ~ na_if(as.numeric(.), 9)
+    )
+  )|>
+  select(-country_code,-centre_code)|>
+  group_by(country,centre)|>
+  summarise(
+    whezev_prev = sum(whezev == 1, na.rm = TRUE) / sum(!is.na(whezev)),
+    whez12_prev = sum(whez12 == 1, na.rm = TRUE) / sum(!is.na(whez12)),
+    awake12_prev = sum(awake12 > 2, na.rm = TRUE) / sum(!is.na(awake12)),
+    exwhez12_prev = sum(exwhez12 == 1, na.rm = TRUE) / sum(!is.na(exwhez12)),
+    n=n()
+  )
+ 
+```
+
+```{r}
+fix_isaac_country_centre= 
+  isaac_country_centre|>
+  mutate(
+    country = case_when(
+      country == "Brasil" ~ "Brazil",
+      country == "Hong Kong (SAR China)" ~ "Hong Kong",
+      country == "Sultanate of Oman" ~ "Oman",
+      TRUE ~ country
+    ),
+    centre = case_when(
+      centre == "Tiran�" ~ "Tiran",
+      centre == "S�o Paulo" ~ "São Paulo",
+      centre == "Uberl�ndia" ~ "Uberlândia",
+      centre == "M�nster" ~ "Münster",
+      centre %in% c("Central Santiago","South Santiago") ~ "Santiago",
+      centre == "Metro Manilla" ~ "Metro Manila",
+      centre == "Stockholm/Uppsala" ~ "Stockholm",
+      centre == "West Bank" ~ "Ramallah",
+      centre == "Bay of Plenty" ~ "Tauranga",
+      centre == "Hawke's Bay" ~ "Napier",
+      centre == "Link�ping" ~ "Linköping",
+      centre == "K�rnten" ~ "Kärnten",
+      centre == "Ober�sterreich" ~ "Oberösterreich",
+      centre == "Nord Tr�ndelag" ~ "Nord-Trøndelag",
+      centre == "Castell�n" ~ "Castellón",
+      centre == "Al–Khod" ~ "Al Khoud",
+      centre == "Malta" ~ "Valletta",
+      centre == "Barbados" ~ "Bridgetown",
+      centre == "Provincial Korea" ~ "Seoul",
+      centre == "David-Panam�"~ "David, Panama",
+      TRUE ~ centre
+    )
+  )
+# find some country or centre name has some unreadable symbol so we fix them
+
+```
+
+```{r}
+centres_geo=
+  fix_isaac_country_centre|>
+  tidygeocoder::geocode(
+    city = centre,
+    country = country,
+    method = "osm",
+    lat = lat,
+    long = lon
+  )
+
+```
+
+```{r}
+problem=
+  centres_geo|>
+  filter(is.na(lat) | is.na(lon))|>
+  select(country,centre, lat,lon)
+# find the country/ centre without lat and lon
+```
+
+```{r}
+centres_geo=
+  centres_geo|>
+  mutate(
+    lat = case_when(
+      country == "Hong Kong" & centre == "Hong Kong" ~ 22.3193,
+      country == "Israel"    & centre == "Ramallah" ~ 31.9038,
+      country == "Norway"    & centre %in% c("Nord–Trøndelag","Nord-Trøndelag") ~ 64.0139,
+      country == "Panama"    & grepl("David", centre) ~ 8.4273,
+      country == "Oman"      & centre %in% c("Al–Khod","Al-Khod") ~ 23.6139,
+      TRUE ~ lat
+    ),
+    lon = case_when(
+      country == "Hong Kong" & centre == "Hong Kong" ~ 114.1694,
+      country == "Israel"    & centre == "Ramallah" ~ 35.2034,
+      country == "Norway"    & centre %in% c("Nord–Trøndelag","Nord-Trøndelag") ~ 11.4954,
+      country == "Panama"    & grepl("David", centre) ~ -82.4309,
+      country == "Oman"      & centre %in% c("Al–Khod","Al-Khod") ~ 58.1644,
+      TRUE ~ lon
+    )
+  )
+# add the lat and lon by myself
+```
+
+```{r}
+
+df= centres_geo |>
+  ungroup() |>
+  mutate(
+    whezev_prev   = as.numeric(whezev_prev),
+    whez12_prev   = as.numeric(whez12_prev),
+    awake12_prev  = as.numeric(awake12_prev),
+    exwhez12_prev = as.numeric(exwhez12_prev),
+    n   = as.numeric(n),
+    lat = as.numeric(lat),
+    lon = as.numeric(lon)
+  ) |>
+  filter(!is.na(lat), !is.na(lon)) |>
+  mutate(
+    popup = sprintf(
+      "<b>%s - %s</b><br/>
+       Wheeze ever: %s<br/>
+       Wheeze (12 mo): %s<br/>
+       Night awakening: %s<br/>
+       Exercise wheeze: %s<br/>
+       n = %s",
+      htmlEscape(country),
+      htmlEscape(centre),
+      percent(whezev_prev,   accuracy = 0.1),
+      percent(whez12_prev,   accuracy = 0.1),
+      percent(awake12_prev,  accuracy = 0.1),
+      percent(exwhez12_prev, accuracy = 0.1),
+      n
+    )
+  ) |>
+  as.data.frame()  
+
+pal= colorNumeric(
+  palette = "viridis",
+  domain  = df$whezev_prev,
+  na.color = "#BEBEBE"
+)
+
+country_map= leaflet(data = df) |>
+  addProviderTiles(providers$CartoDB.Positron) |>
+  addCircleMarkers(
+    lng = ~lon, lat = ~lat,
+    radius = ~pmax(3, sqrt(n) / 8),
+    color  = ~pal(whezev_prev),
+    stroke = TRUE, weight = 1, opacity = 1,
+    fillOpacity = 0.85,
+    popup = ~popup   
+  ) |>
+  addLegend(
+    position = "bottomright",
+    pal = pal, values = ~whezev_prev,
+    title = "Wheeze ever prevalence",
+    labFormat = labelFormat(transform = function(x) x * 100, suffix = "%", digits = 1)
+  )
+
+country_map
+
+```
+
+
